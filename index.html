@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Business Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7f9;
+      color: #333;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      color: white;
+      padding: 10px 20px;
+    }
+    .navbar .left,
+    .navbar .right {
+      display: flex;
+      gap: 15px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .navbar .center {
+      font-size: 18px;
+      background: #27ae60;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Date */
+    .date {
+      text-align: center;
+      font-size: 22px;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+
+    /* Sections */
+    .section {
+      background: white;
+      margin: 15px auto;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 800px;
+    }
+    .section h2 {
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    table th {
+      background: #ecf0f1;
+    }
+
+    /* Side by side debit/credit */
+    .flex-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .half-section {
+      flex: 1;
+      min-width: 350px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Footer Profit Summary */
+    .footer {
+      background: #2c3e50;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-size: 18px;
+    }
+
+    /* Buttons */
+    .btn {
+      background: #2980b9;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      margin: 5px 0;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #1f6391;
+    }
+
+    /* Input Form */
+    .form-inline {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .form-inline input {
+      padding: 6px;
+      flex: 1;
+    }
+
+    /* Notes */
+    .notes {
+      width: 90%;
+      max-width: 800px;
+      margin: 15px auto;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    /* Popup */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+    }
+    video {
+      width: 100%;
+      max-height: 300px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="left">
+      <div title="Scan Bill" onclick="openCamera()">📷</div>
+      <div title="Voice Input" onclick="startMic()">🎤</div>
+    </div>
+    <div class="center" title="Payment Scanner" onclick="openCamera()">📱 Scan & Pay</div>
+    <div class="right">
+      <div title="Calendar" onclick="openCalendar()">📅</div>
+      <div title="Home" onclick="openHome()">🏠</div>
+    </div>
+  </div>
+
+  <!-- Today's Date -->
+  <div class="date" id="today-date"></div>
+
+  <!-- Reminders -->
+  <div class="section">
+    <h2>🔔 Reminders (Due Today)</h2>
+    <ul id="reminder-list"><li>No reminders today</li></ul>
+  </div>
+
+  <!-- Debit & Credit side by side -->
+  <div class="flex-row">
+    <!-- Debit List -->
+    <div class="half-section">
+      <h2>📉 Debit List</h2>
+      <div class="form-inline">
+        <input type="text" id="debit-name" placeholder="Name">
+        <input type="number" id="debit-amount" placeholder="Amount">
+        <input type="text" id="debit-phone" placeholder="Phone">
+        <button class="btn" onclick="addDebit()">Add</button>
+      </div>
+      <table id="debit-table">
+        <tr><th>Name</th><th>Amount</th><th>Phone</th></tr>
+      </table>
+    </div>
+
+    <!-- Credit List -->
+    <div class="half-section">
+      <h2>📈 Credit List</h2>
+      <div class="form-inline">
+        <input type="text" id="credit-name" placeholder="Name">
+        <input type="number" id="credit-amount" placeholder="Amount">
+        <input type="text" id="credit-phone" placeholder="Phone">
+        <button class="btn" onclick="addCredit()">Add</button>
+      </div>
+      <table id="credit-table">
+        <tr><th>Name</th><th>Amount</th><th>Phone</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="notes">
+    <h2>📝 Notes</h2>
+    <textarea id="notes-box" placeholder="Write anything here..."></textarea>
+  </div>
+
+  <!-- Profit Summary -->
+  <div class="footer" id="profit-summary">
+    Today: ₹0
+  </div>
+
+  <!-- Popup -->
+  <div class="popup" id="popup">
+    <div class="popup-content" id="popup-content"></div>
+  </div>
+
+<script>
+  // Current date selected (default = today)
+  let currentDate = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
+  document.getElementById("today-date").innerText = new Date(currentDate).toDateString();
+
+  // Storage structure: records[date] = {debits:[], credits:[], notes:""}
+  let records = JSON.parse(localStorage.getItem("records")) || {};
+
+  function saveData() {
+    localStorage.setItem("records", JSON.stringify(records));
+  }
+
+  function getTodayRecords() {
+    if (!records[currentDate]) {
+      records[currentDate] = {debits:[], credits:[], notes:""};
+    }
+    return records[currentDate];
+  }
+
+  // Add debit
+  function addDebit() {
+    let rec = getTodayRecords();
+    let name = document.getElementById("debit-name").value;
+    let amount = parseFloat(document.getElementById("debit-amount").value);
+    let phone = document.getElementById("debit-phone").value;
+    if (name && amount) {
+      rec.debits.push({name, amount, phone});
+      saveData();
+      updateUI();
+      document.getElementById("debit-name").value="";
+      document.getElementById("debit-amount").value="";
+      document.getElementById("debit-phone").value="";
+    }
+  }
+
+  // Add credit
+  function addCredit() {
+    let rec = getTodayRecords();
+    let name = document.getElementById("credit-name").value;
+    let amount = parseFloat(document.getElementById("credit-amount").value);
+    let phone = document.getElementById("credit-phone").value;
+    if (name && amount) {
+      rec.credits.push({name, amount, phone});
+      saveData();
+      updateUI();
+      document.getElementById("credit-name").value="";
+      document.getElementById("credit-amount").value="";
+      document.getElementById("credit-phone").value="";
+    }
+  }
+
+  // Update UI
+  function updateUI() {
+    let rec = getTodayRecords();
+
+    // Update tables
+    let debitTable = document.getElementById("debit-table");
+    debitTable.innerHTML = "<tr><th>Name</th><th>Amount</th><th>Phone</th></tr>";
+    rec.debits.forEach(d=>{
+      debitTable.innerHTML += `<tr><td>${d.name}</td><td>₹${d.amount}</td><td>${d.phone}</td></tr>`;
+    });
+
+    let creditTable = document.getElementById("credit-table");
+    creditTable.innerHTML = "<tr><th>Name</th><th>Amount</th><th>Phone</th></tr>";
+    rec.credits.forEach(c=>{
+      creditTable.innerHTML += `<tr><td>${c.name}</td><td>₹${c.amount}</td><td>${c.phone}</td></tr>`;
+    });
+
+    // Profit
+    let totalDebit = rec.debits.reduce((s,d)=>s+d.amount,0);
+    let totalCredit = rec.credits.reduce((s,c)=>s+c.amount,0);
+    let profit = totalCredit - totalDebit;
+    document.getElementById("profit-summary").innerText = `Date: ${new Date(currentDate).toDateString()} | Profit: ₹${profit}`;
+
+    // Notes
+    document.getElementById("notes-box").value = rec.notes || "";
+  }
+
+  // Notes save
+  document.getElementById("notes-box").addEventListener("input", function() {
+    let rec = getTodayRecords();
+    rec.notes = this.value;
+    saveData();
+  });
+
+  // Calendar popup
+  function openCalendar() {
+    const popup = document.getElementById("popup");
+    const content = document.getElementById("popup-content");
+    content.innerHTML = `<h3>Pick a Date</h3><input type="date" value="${currentDate}" id="date-picker"><br><br><button class="btn" onclick="setDate()">Select</button> <button class="btn" onclick="closePopup()">Close</button>`;
+    popup.style.display = "flex";
+  }
+  function setDate() {
+    currentDate = document.getElementById("date-picker").value;
+    document.getElementById("today-date").innerText = new Date(currentDate).toDateString();
+    updateUI();
+    closePopup();
+  }
+
+  // Camera popup
+  function openCamera() {
+    const popup = document.getElementById("popup");
+    const content = document.getElementById("popup-content");
+    content.innerHTML = `<h3>Camera</h3><video autoplay></video><br><button class="btn" onclick="closePopup()">Close</button>`;
+    popup.style.display = "flex";
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        content.querySelector("video").srcObject = stream;
+      })
+      .catch(err => alert("Camera not accessible: " + err));
+  }
+
+  // Mic popup
+  function startMic() {
+    const popup = document.getElementById("popup");
+    const content = document.getElementById("popup-content");
+    content.innerHTML = `<h3>Voice Input</h3><p id="mic-text">Listening...</p><br><button class="btn" onclick="closePopup()">Close</button>`;
+    popup.style.display = "flex";
+    if ('webkitSpeechRecognition' in window) {
+      let recognition = new webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.onresult = function(event) {
+        document.getElementById("mic-text").innerText = "You said: " + event.results[0][0].transcript;
+      }
+      recognition.start();
+    } else {
+      document.getElementById("mic-text").innerText = "Speech recognition not supported.";
+    }
+  }
+
+  // Home popup
+  function openHome() {
+    const popup = document.getElementById("popup");
+    const content = document.getElementById("popup-content");
+    content.innerHTML = `<h3>Home Settings</h3>
+      <label>Language: 
+        <select>
+          <option>English</option>
+          <option>हिन्दी</option>
+          <option>தமிழ்</option>
+          <option>తెలుగు</option>
+        </select>
+      </label><br><br>
+      <button class="btn" onclick="closePopup()">Close</button>`;
+    popup.style.display = "flex";
+  }
+
+  // Close popup
+  function closePopup() {
+    document.getElementById("popup").style.display = "none";
+  }
+
+  // Init
+  updateUI();
+</script>
+
+</body>
+</html>
